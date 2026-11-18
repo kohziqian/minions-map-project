@@ -1,0 +1,6 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "cmake.sourceDirectory": "D:/Coding/FlutterProjects/project/ex_flutter_application_1/windows",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.gradle.enabled": false
+}
