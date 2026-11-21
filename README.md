@@ -1,5 +1,4 @@
 # ExamGuardQR
-
 A new Flutter project.
 
 ## Installation & Setup

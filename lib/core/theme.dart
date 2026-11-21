@@ -1,53 +1,6 @@
-// Shared UI for all screens
-
 import 'package:flutter/material.dart';
 
-// =====================================================
-// SHARED UI PIECES
-// =====================================================
-
-class InfoRow extends StatelessWidget {
-  final String title;
-  final String value;
-  final int flexTitle;
-  final int flexValue;
-
-  const InfoRow(
-    this.title,
-    this.value, {
-    super.key,
-    this.flexTitle = 1,
-    this.flexValue = 1,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: flexTitle,
-            child: Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            flex: flexValue,
-            child: Text(value, textAlign: TextAlign.end),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// =====================================================
-// APP THEME (Inter, iOS-style minimalist)
-// =====================================================
-
+// APP THEME
 const Color kCanvas = Color(0xFFF5F6F8);
 const Color kInk = Color(0xFF1F2937);
 const Color kSlate = Color(0xFF6B7280);
@@ -92,3 +45,32 @@ ThemeData buildAppTheme() {
     ),
   );
 }
+
+// TEXT STYLES
+// Section header: "Today", "Upcoming", "Completed", "Mon, 5 Jan 2026"
+const TextStyle kSectionStyle = TextStyle(
+  fontSize: 18,
+  fontWeight: FontWeight.w700,
+  color: kInk,
+);
+
+// Sub header: time-slot label
+const TextStyle kSubSectionStyle = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.w600,
+  color: kSlate,
+);
+
+// Main line on a card: course code
+const TextStyle kCardTitleStyle = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+  color: kInk,
+);
+
+// Detail lines on a card: date, time, hall, students
+const TextStyle kCardMetaStyle = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  color: kSlate,
+);
