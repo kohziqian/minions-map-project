@@ -35,15 +35,16 @@ class UserService {
         prefix: 'Could not save profile',
       );
 
+  /// Updates only the fields that are passed.
   Future<void> updateContact({
     required String uid,
-    required String secondaryEmail,
-    required String phoneNumber,
+    String? secondaryEmail,
+    String? phoneNumber,
   }) =>
       guardFirebase(
         () => _users.doc(uid).update({
-          'secondaryEmail': secondaryEmail,
-          'phoneNumber': phoneNumber,
+          if (secondaryEmail != null) 'secondaryEmail': secondaryEmail,
+          if (phoneNumber != null) 'phoneNumber': phoneNumber,
           'updatedAt': FieldValue.serverTimestamp(),
         }),
         prefix: 'Could not update profile',

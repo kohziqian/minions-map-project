@@ -5,9 +5,10 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/utils/qr_codec.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/profile_viewmodel.dart';
-import '../widgets/info_row.dart';
-import 'edit_profile_page.dart';
+import '../widgets/profile_field_tile.dart';
 
+// Profile Page
+// Only the secondary email and phone number can be edited
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -30,8 +31,7 @@ class ProfilePage extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(dialogContext);
 
-                // Return to the root first so no page stays stacked
-                // above the AuthGate once the user is signed out.
+                // Return to the root first so no page stays stacked above the AuthGate once the user is signed out.
                 navigator.popUntil((route) => route.isFirst);
                 auth.logout();
               },
@@ -55,11 +55,6 @@ class ProfilePage extends StatelessWidget {
       );
     }
 
-    String field(String value) {
-      final v = value.trim();
-      return v.isEmpty ? 'Not set' : v;
-    }
-
     final matric = user.matricNo.trim();
     final primaryEmail = vm.primaryEmail;
 
@@ -74,26 +69,14 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Edit profile',
-        child: const Icon(Icons.edit),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditProfilePage(user: user),
-            ),
-          );
-        },
-      ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 96),
+          padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
             child: Column(
               children: [
-                // PERSONAL QR (same as matric card)
+                // Personal QR containing matric no. on profile
                 Container(
                   width: 220,
                   height: 220,
@@ -121,7 +104,7 @@ class ProfilePage extends StatelessWidget {
                           ],
                         )
                       : QrImageView(
-                          data: studentQrData(matric),
+                          data: studentQrData(matric),  // QR contains student matric no.
                           version: QrVersions.auto,
                         ),
                 ),
@@ -129,7 +112,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 Text(
-                  field(user.fullName),
+                  user.fullName.trim().isEmpty ? 'Not set' : user.fullName,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 24,
@@ -143,43 +126,54 @@ class ProfilePage extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
-                      vertical: 12,
+                      vertical: 8,
                     ),
                     child: Column(
                       children: [
-                        InfoRow(
-                          user.isInvigilator ? 'Staff ID' : 'Matric Number',
-                          field(user.matricNo),
-                          flexTitle: 4,
-                          flexValue: 6,
+                        // ---- read-only ----
+                        ProfileFieldTile(
+                          icon: Icons.badge_outlined,
+                          label: user.isInvigilator
+                              ? 'Staff ID'
+                              : 'Matric Number',
+                          value: user.matricNo,
                         ),
-                        const Divider(),
-                        InfoRow(
-                          'Faculty',
-                          field(user.faculty),
-                          flexTitle: 4,
-                          flexValue: 6,
+                        const Divider(height: 1),
+                        ProfileFieldTile(
+                          icon: Icons.school_outlined,
+                          label: 'Faculty',
+                          value: user.faculty,
                         ),
-                        const Divider(),
-                        InfoRow(
-                          'Primary Email',
-                          primaryEmail.isEmpty ? 'Not set' : primaryEmail,
-                          flexTitle: 4,
-                          flexValue: 6,
+                        const Divider(height: 1),
+                        ProfileFieldTile(
+                          icon: Icons.email_outlined,
+                          label: 'Primary Email',
+                          value: primaryEmail,
                         ),
-                        const Divider(),
-                        InfoRow(
-                          'Secondary Email',
-                          field(user.secondaryEmail),
-                          flexTitle: 4,
-                          flexValue: 6,
+                        const Divider(height: 1),
+
+                        // editable (pen icon)
+                        ProfileFieldTile(
+                          icon: Icons.alternate_email,
+                          label: 'Secondary Email',
+                          value: user.secondaryEmail,
+                          keyboardType: TextInputType.emailAddress, 
+                          onSave: (value) async { // Turns value into editable
+                            final ok = await vm.saveSecondaryEmail(value);
+                            return ok ? null : vm.error;
+                          },
                         ),
-                        const Divider(),
-                        InfoRow(
-                          'Phone Number',
-                          field(user.phoneNumber),
-                          flexTitle: 4,
-                          flexValue: 6,
+                        const Divider(height: 1),
+                        ProfileFieldTile(
+                          icon: Icons.phone_outlined,
+                          label: 'Phone Number',
+                          value: user.phoneNumber,
+                          keyboardType: TextInputType.phone,  
+                          hint: 'e.g. +60123456789',
+                          onSave: (value) async { // Turns value into editable
+                            final ok = await vm.savePhone(value);
+                            return ok ? null : vm.error;
+                          },
                         ),
                       ],
                     ),

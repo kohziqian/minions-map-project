@@ -6,7 +6,7 @@ import '../services/service_exception.dart';
 import '../services/user_service.dart';
 import 'base_viewmodel.dart';
 
-// Profile page for signed in user with details
+// user profile with editing for contact details
 class ProfileViewModel extends BaseViewModel {
   final UserService _users;
   final AuthService _auth;
@@ -20,11 +20,11 @@ class ProfileViewModel extends BaseViewModel {
   ProfileViewModel(this._users, this._auth) {
     _authSub = _auth.uidChanges.listen(_onUidChanged);
   }
-  
-  // null while loading (or right after registration, before the profile document exists
+
+  // Profile page is null while loading, after a new registration
   AppUser? get profile => _profile;
 
-  // Primary email, falls back to the Auth email
+  // Registered email, falling back to the Auth email.
   String get primaryEmail {
     final email = _profile?.email ?? '';
     return email.isNotEmpty ? email : (_auth.currentEmail ?? '');
@@ -43,7 +43,9 @@ class ProfileViewModel extends BaseViewModel {
           _profile = user;
           notifyListeners();
         },
-        onError: (_) {},  // Allows user to logout when profile is null
+        onError: (_) {},
+        // The profile page remains null onError
+        // User still can logout
       );
     }
 
@@ -57,20 +59,10 @@ class ProfileViewModel extends BaseViewModel {
     super.dispose();
   }
 
-  // Validates and saves secondary email + phone number.
-  Future<bool> saveContact({
-    required String secondaryEmail,
-    required String phone,
-  }) =>
-      run(() async {
-        final uid = _uid;
-
-        if (uid == null) {
-          throw const ServiceException('You are not signed in.');
-        }
-
-        final secondary = secondaryEmail.trim();
-        final phoneNo = phone.trim();
+  // Validate and save the secondary email (if empty clear it)
+  Future<bool> saveSecondaryEmail(String value) => run(() async {
+        final uid = _requireUid();
+        final secondary = value.trim();
 
         if (secondary.isNotEmpty) {
           final emailOk =
@@ -88,6 +80,13 @@ class ProfileViewModel extends BaseViewModel {
             );
           }
         }
+        await _users.updateContact(uid: uid, secondaryEmail: secondary);
+      });
+
+  // Validate and save the phone number (if empty clear it)
+  Future<bool> savePhone(String value) => run(() async {
+        final uid = _requireUid();
+        final phoneNo = value.trim();
 
         if (phoneNo.isNotEmpty) {
           final digits = phoneNo.replaceAll(RegExp(r'\D'), '');
@@ -98,10 +97,16 @@ class ProfileViewModel extends BaseViewModel {
           }
         }
 
-        await _users.updateContact(
-          uid: uid,
-          secondaryEmail: secondary,
-          phoneNumber: phoneNo,
-        );
+        await _users.updateContact(uid: uid, phoneNumber: phoneNo);
       });
+
+  String _requireUid() {
+    final uid = _uid;
+
+    if (uid == null) {
+      throw const ServiceException('You are not signed in.');
+    }
+
+    return uid;
+  }
 }
